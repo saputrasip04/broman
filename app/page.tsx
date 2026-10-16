@@ -22,7 +22,7 @@ export default function HomePage() {
       <div className="absolute top-[800px] left-1/3 -z-10 h-80 w-80 rounded-full bg-amber-500/10 blur-[120px] pointer-events-none" />
 
       {/* Hero Section */}
-      <section className="mx-auto max-w-7xl px-4 pt-16 pb-20 sm:px-6 lg:px-8 text-center">
+      <section className="mx-auto max-w-7xl px-4 pt-8 pb-10 sm:pt-12 sm:pb-14 sm:px-6 lg:px-8 text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1.5 text-xs font-medium text-sky-400 mb-6 backdrop-blur-md">
           <Sparkles className="h-3.5 w-3.5 text-sky-400 animate-spin" />
@@ -46,7 +46,7 @@ export default function HomePage() {
 
 
         {/* Quick Stats Bar */}
-        <div className="mx-auto mt-14 grid max-w-4xl grid-cols-2 gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/50 p-4 backdrop-blur-md sm:grid-cols-4">
+        <div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/50 p-4 backdrop-blur-md sm:grid-cols-4">
           <div className="border-r border-slate-800/60 last:border-none p-3 text-center">
             <div className="text-2xl sm:text-3xl font-bold text-white">14 Elemen</div>
             <div className="text-xs text-slate-400 mt-1">Fase E, F & Peminatan</div>

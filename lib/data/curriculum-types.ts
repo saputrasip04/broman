@@ -61,17 +61,21 @@ export interface ElemenSubMenuItem {
   iconName?: string;
 }
 
-export const DEFAULT_ELEMEN_SUBMENUS: ElemenSubMenuItem[] = [
-  { id: "hook", title: "1. Pemantik & Stimulus", subtitle: "Pertanyaan reflektif pengantar", enabled: true, order: 1 },
-  { id: "pretest", title: "2. Pra-tes Diagnostik", subtitle: "Asesmen awal pemahaman", enabled: true, order: 2 },
-  { id: "materi", title: "3. Materi: Slide Interaktif", subtitle: "Slide presentasi & topik materi", enabled: true, order: 3 },
-  { id: "video", title: "4. Video & Panduan Teknis", subtitle: "Simak demonstrasi profesional", enabled: true, order: 4 },
-  { id: "game", title: "5. Simulasi & Praktik Interaktif", subtitle: "Matching istilah & konsep alat", enabled: true, order: 5 },
-  { id: "case", title: "6. Studi Kasus Industri", subtitle: "Problem solving siaran riil", enabled: true, order: 6 },
-  { id: "kuis", title: "7. Kuis Formatif (Bloom C1–C6)", subtitle: "Butir soal terstandar BSKAP", enabled: true, order: 7 },
-  { id: "lkpd", title: "8. LKPD Praktikum & Portofolio", subtitle: "Lembar kerja & submit tugas", enabled: true, order: 8 },
-  { id: "journal", title: "9. Jurnal Refleksi & Capaian", subtitle: "Refleksi 3-2-1 dan KKTP", enabled: true, order: 9 },
-];
+export function getDefaultElemenSubmenus(): ElemenSubMenuItem[] {
+  return [
+    { id: "hook", title: "1. Pemantik & Stimulus", subtitle: "Pertanyaan reflektif pengantar", enabled: true, order: 1 },
+    { id: "pretest", title: "2. Pra-tes Diagnostik", subtitle: "Asesmen awal pemahaman", enabled: true, order: 2 },
+    { id: "materi", title: "3. Materi: Slide Interaktif", subtitle: "Slide presentasi & topik materi", enabled: true, order: 3 },
+    { id: "video", title: "4. Video & Panduan Teknis", subtitle: "Simak demonstrasi profesional", enabled: true, order: 4 },
+    { id: "game", title: "5. Simulasi & Praktik Interaktif", subtitle: "Matching istilah & konsep alat", enabled: true, order: 5 },
+    { id: "case", title: "6. Studi Kasus Industri", subtitle: "Problem solving siaran riil", enabled: true, order: 6 },
+    { id: "kuis", title: "7. Kuis Formatif (Bloom C1–C6)", subtitle: "Butir soal terstandar BSKAP", enabled: true, order: 7 },
+    { id: "lkpd", title: "8. LKPD Praktikum & Portofolio", subtitle: "Lembar kerja & submit tugas", enabled: true, order: 8 },
+    { id: "journal", title: "9. Jurnal Refleksi & Capaian", subtitle: "Refleksi 3-2-1 dan KKTP", enabled: true, order: 9 },
+  ];
+}
+
+export const DEFAULT_ELEMEN_SUBMENUS: ElemenSubMenuItem[] = getDefaultElemenSubmenus();
 
 export interface ElemenContentItem {
   id: string; // e.g. "f4-k1"

@@ -219,7 +219,7 @@ export default function KurikulumExplorer({
     activeFase === "E" ? babsFaseE : activeFase === "F" ? babsFaseF : babsPeminatan;
 
   return (
-    <section id="kurikulum" className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <section id="kurikulum" className="mx-auto max-w-7xl px-4 pt-4 pb-12 sm:px-6 lg:px-8">
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between pb-8 border-b border-slate-800/80 gap-6">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-white">
@@ -295,7 +295,7 @@ export default function KurikulumExplorer({
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {currentBabs.map((bab) => {
           const Icon = bab.icon;
-          const dynamicHours = storedCurriculum[bab.code]?.hours ?? bab.hours;
+          const dynamicHours = storedCurriculum?.[bab.code]?.hours ?? bab.hours;
           const isEditing = editingCode === bab.code;
 
           return (
