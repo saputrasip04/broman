@@ -5,7 +5,7 @@
  */
 
 header("Content-Type: text/html; charset=UTF-8");
-header("HTTP/1.1 503 Service Unavailable");
+http_response_code(200);
 header("Retry-After: 2");
 
 $lock_file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'broman_autostart.lock';
