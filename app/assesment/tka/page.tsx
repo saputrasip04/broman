@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import { apiUrl } from "@/lib/api-client";
 import {
   Award,
   Timer,
@@ -175,6 +176,16 @@ export default function TesKompetensiAkademikPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [fontSizeMode, setFontSizeMode] = useState<"normal" | "large" | "xlarge">("normal");
+  const [userRole, setUserRole] = useState<string>("murid");
+
+  useEffect(() => {
+    fetch(apiUrl("/api/auth/me"))
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.role) setUserRole(data.user.role);
+      })
+      .catch(() => {});
+  }, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -320,17 +331,19 @@ export default function TesKompetensiAkademikPage() {
           <span>Kembali ke Portal Assesment</span>
         </Link>
 
-        {/* Link Terpadu Portal Guru & Pengawas */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/assesment/tka/guru"
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3.5 py-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm"
-          >
-            <UserCheck className="h-3.5 w-3.5" />
-            <span>Portal Guru & Pengawas</span>
-            <ExternalLink className="h-3 w-3" />
-          </Link>
-        </div>
+        {/* Link Terpadu Portal Guru & Pengawas (Khusus Guru & Admin) */}
+        {(userRole === "guru" || userRole === "super_admin") && (
+          <div className="flex items-center gap-3">
+            <Link
+              href="/assesment/tka/guru"
+              className="inline-flex items-center gap-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 px-3.5 py-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm"
+            >
+              <UserCheck className="h-3.5 w-3.5" />
+              <span>Portal Guru & Pengawas</span>
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* TAMPILAN 1: Halaman Masuk Ujian CBT (Login & Scan Kartu ala Yamaclaw Server) */}

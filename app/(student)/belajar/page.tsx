@@ -346,12 +346,6 @@ export default function StudentDashboardPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
-                      href="/assesment/tka/guru"
-                      className="rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-750 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
-                    >
-                      Pengawas
-                    </Link>
-                    <Link
                       href="/assesment/tka"
                       className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-amber-500/20 hover:from-amber-400 hover:to-orange-500 transition-all"
                     >

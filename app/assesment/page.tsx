@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { apiUrl } from "@/lib/api-client";
 import {
   ClipboardCheck,
   FileSpreadsheet,
@@ -25,6 +26,18 @@ export default function AssesmentHubPage() {
   const router = useRouter();
   const [tokenInput, setTokenInput] = useState("");
   const [tokenError, setTokenError] = useState("");
+  const [userRole, setUserRole] = useState<string>("murid");
+
+  useEffect(() => {
+    fetch(apiUrl("/api/auth/me"))
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.role) setUserRole(data.user.role);
+      })
+      .catch(() => {});
+  }, []);
+
+  const isTeacherOrAdmin = userRole === "guru" || userRole === "super_admin";
 
   const handleTokenSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,20 +269,24 @@ export default function AssesmentHubPage() {
                 <span>Durasi: 45 Menit CBT</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link
-                  href="/guru?pg=banksoal"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/50 px-3.5 py-2.5 text-xs font-bold text-purple-300 hover:text-white transition-all shadow-md"
-                >
-                  <BookOpen className="h-3.5 w-3.5 text-purple-400" />
-                  <span>Bank Soal CBT</span>
-                </Link>
-                <Link
-                  href="/assesment/tka/guru"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-white transition-all"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
-                  <span>Portal Pengawas</span>
-                </Link>
+                {isTeacherOrAdmin && (
+                  <>
+                    <Link
+                      href="/guru?pg=banksoal"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/50 px-3.5 py-2.5 text-xs font-bold text-purple-300 hover:text-white transition-all shadow-md"
+                    >
+                      <BookOpen className="h-3.5 w-3.5 text-purple-400" />
+                      <span>Bank Soal CBT</span>
+                    </Link>
+                    <Link
+                      href="/assesment/tka/guru"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-white transition-all"
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Portal Pengawas</span>
+                    </Link>
+                  </>
+                )}
                 <Link
                   href="/assesment/tka"
                   className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-orange-500 transition-all hover:scale-[1.02] active:scale-[0.98]"

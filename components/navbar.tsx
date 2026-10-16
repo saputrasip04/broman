@@ -74,6 +74,7 @@ export default function Navbar() {
   };
 
   const menuFlags = useMenuVisibilityStore();
+  const isTeacherOrAdmin = currentUser?.role === "guru" || currentUser?.role === "super_admin";
 
   const navLinks = [
     ...(menuFlags.menu_assesment
@@ -107,22 +108,26 @@ export default function Navbar() {
                       badge: "CBT",
                       color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
                     },
-                    {
-                      name: "Pusat Kendali Pengawas TKA",
-                      desc: "Monitoring Live & Rilis Token Ujian",
-                      href: "/assesment/tka/guru",
-                      icon: UserCheck,
-                      badge: "Pengawas",
-                      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-                    },
-                    {
-                      name: "Bank Soal CBT (Input Soal)",
-                      desc: "Input & Kelola Paket Soal PG & Esai",
-                      href: "/guru?pg=banksoal",
-                      icon: BookOpen,
-                      badge: "Bank Soal",
-                      color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
-                    },
+                    ...(isTeacherOrAdmin
+                      ? [
+                          {
+                            name: "Pusat Kendali Pengawas TKA",
+                            desc: "Monitoring Live & Rilis Token Ujian",
+                            href: "/assesment/tka/guru",
+                            icon: UserCheck,
+                            badge: "Pengawas",
+                            color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+                          },
+                          {
+                            name: "Bank Soal CBT (Input Soal)",
+                            desc: "Input & Kelola Paket Soal PG & Esai",
+                            href: "/guru?pg=banksoal",
+                            icon: BookOpen,
+                            badge: "Bank Soal",
+                            color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+                          },
+                        ]
+                      : []),
                   ]
                 : []),
             ],
