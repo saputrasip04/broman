@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/index.php",
+        destination: "/",
+      },
+      {
         source: "/guru/index.php",
         destination: "/guru",
       },
