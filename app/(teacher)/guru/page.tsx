@@ -179,6 +179,17 @@ function TeacherPortalContent() {
     return () => clearInterval(timer);
   }, []);
 
+  // Deteksi sesi role pengguna (Guru vs Super Admin)
+  const [userRole, setUserRole] = useState<string>("guru");
+  useEffect(() => {
+    fetch("/broman/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.role) setUserRole(data.user.role);
+      })
+      .catch(() => {});
+  }, []);
+
   // Sync URL query params (e.g. ?pg=formatsoal atau ?pg=banksoal)
   useEffect(() => {
     const pg = searchParams.get("pg");
@@ -996,12 +1007,21 @@ ANS: Mengkoordinasikan anggaran produksi, memimpin riset & penyusunan jadwal syu
                   <span>Profil Saya</span>
                 </button>
                 <Link
-                  href="/admin"
+                  href="/assesment/tka/guru"
                   className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 font-medium flex items-center gap-2 text-slate-700 transition-colors"
                 >
-                  <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
-                  <span>Dashboard Admin</span>
+                  <Sliders className="h-3.5 w-3.5 text-amber-500" />
+                  <span>Setting CBT & Asesmen</span>
                 </Link>
+                {userRole === "super_admin" && (
+                  <Link
+                    href="/admin"
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 font-medium flex items-center gap-2 text-slate-700 transition-colors"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Dashboard Admin</span>
+                  </Link>
+                )}
                 <Link
                   href="/"
                   className="w-full text-left px-3 py-2 rounded-xl hover:bg-rose-50 text-rose-600 font-medium flex items-center gap-2 border-t border-slate-100 mt-1 transition-colors"

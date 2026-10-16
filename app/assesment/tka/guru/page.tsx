@@ -73,6 +73,11 @@ export default function PortalGuruPengawasPage() {
   const [settingShowScoreToStudent, setSettingShowScoreToStudent] = useState(true);
   const [settingEnableFlagging, setSettingEnableFlagging] = useState(true);
   const [settingAntiCheatWarning, setSettingAntiCheatWarning] = useState(true);
+  const [settingDuration, setSettingDuration] = useState("60");
+  const [settingPassingGrade, setSettingPassingGrade] = useState("75");
+
+  // User Session & Role (Akun Guru vs Super Admin)
+  const [userRole, setUserRole] = useState<string>("guru");
 
   // Initial Mock Participants
   const [participants, setParticipants] = useState<StudentParticipant[]>([
@@ -200,6 +205,27 @@ export default function PortalGuruPengawasPage() {
       });
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Deteksi sesi login aktif pengguna (Guru vs Admin)
+  useEffect(() => {
+    async function loadUserSession() {
+      try {
+        const res = await fetch("/broman/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user?.role) {
+            setUserRole(data.user.role);
+          }
+          if (data?.user?.name) {
+            setSupervisorName(data.user.name);
+          }
+        }
+      } catch (e) {
+        console.error("Gagal memuat sesi autentikasi:", e);
+      }
+    }
+    loadUserSession();
   }, []);
 
   const showToast = (msg: string) => {
@@ -336,13 +362,34 @@ export default function PortalGuruPengawasPage() {
               <ExternalLink className="h-3.5 w-3.5 text-amber-400" />
               <span>Portal Siswa (CBT)</span>
             </Link>
-            <Link
-              href="/admin"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-amber-500/20 transition-all"
+
+            {/* Tombol Akses Setting CBT (Muncul untuk Guru & Admin) */}
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("setting");
+                showToast("Membuka Pengaturan & SOP Sesi CBT");
+                const section = document.getElementById("cbt-tabs-section");
+                if (section) {
+                  section.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
             >
               <Sliders className="h-3.5 w-3.5" />
-              <span>Dashboard Admin</span>
-            </Link>
+              <span>Setting CBT</span>
+            </button>
+
+            {/* Tombol Dashboard Admin: Di-hide pada akun Guru, HANYA tampil jika akun Super Admin */}
+            {userRole === "super_admin" && (
+              <Link
+                href="/admin"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2.5 text-xs font-bold text-slate-200 hover:text-white transition-all shadow-md"
+              >
+                <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
+                <span>Dashboard Admin</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -464,7 +511,7 @@ export default function PortalGuruPengawasPage() {
       </div>
 
       {/* Tabs Menu Pengawas */}
-      <div className="flex border-b border-slate-800 mb-6 gap-2 overflow-x-auto">
+      <div id="cbt-tabs-section" className="flex border-b border-slate-800 mb-6 gap-2 overflow-x-auto scroll-mt-6">
         <button
           type="button"
           onClick={() => setActiveTab("monitor")}
@@ -842,7 +889,7 @@ export default function PortalGuruPengawasPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <div className="text-sm font-semibold text-white">Peringatan Anti Pindah Tab / Layar Penuh</div>
                 <div className="text-xs text-slate-400">Catat log pelanggaran jika siswa meminimize aplikasi ujian.</div>
@@ -859,6 +906,56 @@ export default function PortalGuruPengawasPage() {
                     settingAntiCheatWarning ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
+              </button>
+            </div>
+
+            {/* Durasi Pengerjaan Ujian */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <div className="text-sm font-semibold text-white">Durasi Pengerjaan Ujian</div>
+                <div className="text-xs text-slate-400">Alokasi waktu timer ujian untuk siswa per sesi.</div>
+              </div>
+              <select
+                value={settingDuration}
+                onChange={(e) => setSettingDuration(e.target.value)}
+                className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-semibold"
+              >
+                <option value="30">30 Menit</option>
+                <option value="45">45 Menit</option>
+                <option value="60">60 Menit</option>
+                <option value="90">90 Menit</option>
+                <option value="120">120 Menit</option>
+              </select>
+            </div>
+
+            {/* Standar Kelulusan KKM */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <div className="text-sm font-semibold text-white">KKM / Standar Kelulusan Kompetensi</div>
+                <div className="text-xs text-slate-400">Batas minimal skor untuk predikat Kompeten Industri.</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={settingPassingGrade}
+                  onChange={(e) => setSettingPassingGrade(e.target.value)}
+                  className="w-20 rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold text-center"
+                />
+                <span className="text-xs text-slate-400">Poin</span>
+              </div>
+            </div>
+
+            {/* Tombol Simpan Konfigurasi */}
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => showToast("Pengaturan CBT & SOP Ujian berhasil disimpan!")}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-orange-500 transition-all cursor-pointer"
+              >
+                <Check className="h-4 w-4" />
+                <span>Simpan Pengaturan CBT</span>
               </button>
             </div>
           </div>
