@@ -255,7 +255,14 @@ export default function AssesmentHubPage() {
                 <Timer className="h-4 w-4 text-slate-500" />
                 <span>Durasi: 45 Menit CBT</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/guru?pg=banksoal"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/50 px-3.5 py-2.5 text-xs font-bold text-purple-300 hover:text-white transition-all shadow-md"
+                >
+                  <BookOpen className="h-3.5 w-3.5 text-purple-400" />
+                  <span>Bank Soal CBT</span>
+                </Link>
                 <Link
                   href="/assesment/tka/guru"
                   className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 px-3.5 py-2.5 text-xs font-semibold text-slate-300 hover:text-white transition-all"

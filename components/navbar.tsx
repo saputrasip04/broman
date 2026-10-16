@@ -15,6 +15,7 @@ import {
   Award,
   ChevronDown,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { UserSession } from "@/lib/auth";
@@ -112,6 +113,14 @@ export default function Navbar() {
                       icon: UserCheck,
                       badge: "Pengawas",
                       color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+                    },
+                    {
+                      name: "Bank Soal CBT (Input Soal)",
+                      desc: "Input & Kelola Paket Soal PG & Esai",
+                      href: "/guru?pg=banksoal",
+                      icon: BookOpen,
+                      badge: "Bank Soal",
+                      color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
                     },
                   ]
                 : []),
