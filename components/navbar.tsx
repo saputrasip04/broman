@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronRight,
   BookOpen,
+  ShieldCheck,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { UserSession } from "@/lib/auth";
@@ -125,6 +126,16 @@ export default function Navbar() {
                   ]
                 : []),
             ],
+          },
+        ]
+      : []),
+    ...(currentUser?.role === "super_admin"
+      ? [
+          {
+            name: "Panel Admin",
+            href: "/admin",
+            icon: ShieldCheck,
+            badge: "Admin",
           },
         ]
       : []),
@@ -281,31 +292,43 @@ export default function Navbar() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {currentUser ? (
-            <div className="flex items-center gap-2.5 bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-1.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400">
-                <User className="h-4 w-4" />
+            <>
+              {currentUser.role === "super_admin" && (
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  title="Akses Panel Administrator BroMan"
+                >
+                  <ShieldCheck className="h-4 w-4 shrink-0 text-white" />
+                  <span>Akses Panel</span>
+                </Link>
+              )}
+              <div className="flex items-center gap-2.5 bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400">
+                  <User className="h-4 w-4" />
+                </div>
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-xs font-bold text-white leading-tight">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-[10px] text-slate-400 capitalize">
+                    {currentUser.role === "super_admin"
+                      ? "Super Admin"
+                      : currentUser.role}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  title="Keluar Akun"
+                  className="ml-1 text-slate-400 hover:text-rose-400 transition-colors p-1"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
               </div>
-              <div className="hidden sm:flex flex-col text-left">
-                <span className="text-xs font-bold text-white leading-tight">
-                  {currentUser.name}
-                </span>
-                <span className="text-[10px] text-slate-400 capitalize">
-                  {currentUser.role === "super_admin"
-                    ? "Super Admin"
-                    : currentUser.role}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleLogout}
-                title="Keluar Akun"
-                className="ml-1 text-slate-400 hover:text-rose-400 transition-colors p-1"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </div>
+            </>
           ) : (
             <Link
               href="/login"

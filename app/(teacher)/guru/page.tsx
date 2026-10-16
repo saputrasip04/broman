@@ -974,6 +974,18 @@ ANS: Mengkoordinasikan anggaran produksi, memimpin riset & penyusunan jadwal syu
             <span>Dashboard BroMan</span>
           </button>
 
+          {/* Tombol Akses Panel Admin (Khusus Super Admin) */}
+          {userRole === "super_admin" && (
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg shadow-sm shadow-amber-950/20 active:scale-95 transition-all"
+              title="Akses Panel Administrator BroMan"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>Akses Panel</span>
+            </Link>
+          )}
+
           {/* Lonceng Notifikasi */}
           <div className="relative">
             <button
