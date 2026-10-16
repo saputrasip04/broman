@@ -14,6 +14,7 @@ import {
   UploadCloud,
   Download,
   Database,
+  Pencil,
 } from "lucide-react";
 import { UserRole } from "@/lib/types/database";
 
@@ -123,6 +124,14 @@ export default function AdminPenggunaPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newKelas, setNewKelas] = useState("X BCF 1");
 
+  // Edit User State
+  const [editingUser, setEditingUser] = useState<UserItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editIdentifier, setEditIdentifier] = useState("");
+  const [editRole, setEditRole] = useState<UserRole>("murid");
+  const [editEmail, setEditEmail] = useState("");
+  const [editKelas, setEditKelas] = useState("X BCF 1");
+
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
       u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -218,6 +227,62 @@ export default function AdminPenggunaPage() {
       });
     } catch (err) {
       console.error("Error deleting user from MySQL:", err);
+    }
+  };
+
+  const handleOpenEdit = (user: UserItem) => {
+    setEditingUser(user);
+    setEditName(user.name);
+    setEditIdentifier(user.identifier);
+    setEditRole(user.role);
+    setEditEmail(user.email || "");
+    setEditKelas(user.kelas && user.role === "murid" ? user.kelas : "X BCF 1");
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser || !editName.trim() || !editIdentifier.trim()) return;
+
+    const updatedRole = editRole;
+    const updatedKelas =
+      updatedRole === "murid"
+        ? editKelas
+        : updatedRole === "guru"
+        ? "Guru Pengampu"
+        : "Kepala Lab BCF";
+    const updatedEmail = editEmail.trim() || `${editIdentifier.trim()}@smk.sch.id`;
+
+    const updatedUser: UserItem = {
+      ...editingUser,
+      name: editName.trim(),
+      identifier: editIdentifier.trim(),
+      role: updatedRole,
+      email: updatedEmail,
+      kelas: updatedKelas,
+    };
+
+    setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? updatedUser : u)));
+    const targetName = updatedUser.name;
+    const targetId = editingUser.id;
+    setEditingUser(null);
+    showNotice(`Data pengguna "${targetName}" berhasil diperbarui di basis data MySQL.`);
+
+    try {
+      await fetch("/broman/api/admin/pengguna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_user",
+          id: targetId,
+          name: updatedUser.name,
+          identifier: updatedUser.identifier,
+          role: updatedUser.role,
+          email: updatedEmail,
+          kelas: updatedKelas,
+        }),
+      });
+    } catch (err) {
+      console.error("Error updating user in MySQL:", err);
     }
   };
 
@@ -412,7 +477,16 @@ export default function AdminPenggunaPage() {
                         {u.isActive ? "Aktif" : "Nonaktif"}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(u)}
+                        title="Edit Data Pengguna"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 px-2 py-1 rounded bg-sky-950/60 border border-sky-800/60 hover:bg-sky-900/60 transition-colors mr-2"
+                      >
+                        <Pencil className="h-3 w-3" />
+                        Edit
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(u.id)}
@@ -424,7 +498,7 @@ export default function AdminPenggunaPage() {
                         type="button"
                         onClick={() => handleDeleteUser(u.id, u.name)}
                         title="Hapus Pengguna"
-                        className="text-slate-500 hover:text-rose-400 transition-colors p-1"
+                        className="text-slate-500 hover:text-rose-400 transition-colors p-1 inline-flex items-center justify-center align-middle"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -536,6 +610,112 @@ export default function AdminPenggunaPage() {
                   className="rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 font-semibold text-white shadow"
                 >
                   Simpan Pengguna
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Edit Pengguna */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Pencil className="h-5 w-5 text-sky-400" />
+                Edit Data Pengguna
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingUser(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">Nama Lengkap</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Nama lengkap siswa atau guru"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-white focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">Peran Akun</label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value as UserRole)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-white focus:outline-none focus:border-sky-500"
+                >
+                  <option value="murid">Murid (Siswa)</option>
+                  <option value="guru">Guru Pengampu</option>
+                  <option value="super_admin">Super Administrator</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  {editRole === "murid" ? "Nomor Induk Siswa (NIS)" : "Nomor Identitas Pegawai (NIP/ID)"}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editIdentifier}
+                  onChange={(e) => setEditIdentifier(e.target.value)}
+                  placeholder="Contoh: 10250"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-white focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              {editRole === "murid" && (
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Kelas / Rombel</label>
+                  <select
+                    value={editKelas}
+                    onChange={(e) => setEditKelas(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-white focus:outline-none focus:border-sky-500"
+                  >
+                    <option value="X BCF 1">X BCF 1</option>
+                    <option value="X BCF 2">X BCF 2</option>
+                    <option value="XI BCF 1">XI BCF 1</option>
+                    <option value="XI BCF 2">XI BCF 2</option>
+                    <option value="XII BCF 1">XII BCF 1</option>
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">Email Sekolah</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="nama@smk.sch.id"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 p-2.5 text-white focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <div className="pt-4 flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-slate-300 hover:text-white"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 font-semibold text-white shadow hover:opacity-90 transition-opacity"
+                >
+                  Simpan Perubahan
                 </button>
               </div>
             </form>

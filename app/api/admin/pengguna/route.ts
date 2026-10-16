@@ -99,6 +99,73 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 1b. Aksi Edit / Perbarui Data Pengguna
+    if (body.action === "update_user" && body.id) {
+      const { id, name, identifier, role = "murid", email, kelas } = body;
+      if (!name || !identifier) {
+        return NextResponse.json(
+          { success: false, error: "Nama dan Nomor Identitas (NIS/NIP) wajib diisi" },
+          { status: 400 }
+        );
+      }
+
+      const cleanIdentifier = String(identifier).trim();
+      const cleanRole = ["super_admin", "guru", "murid"].includes(role) ? role : "murid";
+      const cleanEmail = email ? String(email).trim() : `${cleanIdentifier}@smk.sch.id`;
+
+      // Update data di profiles
+      await queryMySQL(
+        `UPDATE profiles 
+         SET full_name = ?, role = ?, identifier = ?, email = ?, updated_at = NOW()
+         WHERE id = ?`,
+        [name.trim(), cleanRole, cleanIdentifier, cleanEmail, id]
+      );
+
+      // Sinkronkan relasi kelas di class_members
+      if (cleanRole === "murid" && kelas) {
+        const clsRes = await queryMySQL<{ id: string }>(
+          "SELECT id FROM classes WHERE name = ? LIMIT 1",
+          [kelas.trim()]
+        );
+        if (clsRes.success && clsRes.data && clsRes.data.length > 0) {
+          const classId = clsRes.data[0].id;
+          await queryMySQL("DELETE FROM class_members WHERE user_id = ?", [id]);
+          await queryMySQL(
+            `INSERT INTO class_members (class_id, user_id, member_role)
+             VALUES (?, ?, 'murid')`,
+            [classId, id]
+          );
+        }
+      } else {
+        await queryMySQL("DELETE FROM class_members WHERE user_id = ?", [id]);
+      }
+
+      // Catat log aktivitas
+      const logId = randomUUID();
+      await queryMySQL(
+        `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
+         VALUES (?, 'usr-admin-01', 'UPDATE_USER', 'profiles', ?, ?)`,
+        [
+          logId,
+          id,
+          JSON.stringify({ name: name.trim(), role: cleanRole, identifier: cleanIdentifier, kelas }),
+        ]
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: `Data pengguna ${name} berhasil diperbarui di basis data MySQL`,
+        user: {
+          id,
+          name: name.trim(),
+          identifier: cleanIdentifier,
+          role: cleanRole,
+          email: cleanEmail,
+          kelas: cleanRole === "murid" ? kelas : (cleanRole === "guru" ? "Guru Pengampu" : "Kepala Lab BCF"),
+        },
+      });
+    }
+
     // 2. Aksi Batch Import Pengguna (dari template file / multi-input)
     if (Array.isArray(body.users) && body.users.length > 0) {
       let insertedCount = 0;
