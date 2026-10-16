@@ -31,6 +31,7 @@ import {
   UserCheck,
   BookOpen,
 } from "lucide-react";
+import { apiUrl } from "@/lib/api-client";
 
 interface StudentParticipant {
   id: string;
@@ -51,7 +52,7 @@ interface StudentParticipant {
 export default function PortalGuruPengawasPage() {
   // Authentication & Session
   const [isSupervisorLoggedIn, setIsSupervisorLoggedIn] = useState(true);
-  const [supervisorName, setSupervisorName] = useState("Pak Budi Haryanto, S.Sn (NIP. 198504122010011015)");
+  const [supervisorName, setSupervisorName] = useState("Very Kurniawan, S.Pd., Gr. (NIP. 199002042022211009)");
   const [roomName, setRoomName] = useState("Ruang CBT Lab Broadcasting 1");
 
   // Token Management
@@ -212,14 +213,15 @@ export default function PortalGuruPengawasPage() {
   useEffect(() => {
     async function loadUserSession() {
       try {
-        const res = await fetch("/broman/api/auth/me");
+        const res = await fetch(apiUrl("/api/auth/me"));
         if (res.ok) {
           const data = await res.json();
           if (data?.user?.role) {
             setUserRole(data.user.role);
           }
           if (data?.user?.name) {
-            setSupervisorName(data.user.name);
+            const nipStr = data.user.identifier ? ` (NIP. ${data.user.identifier})` : "";
+            setSupervisorName(`${data.user.name}${nipStr}`);
           }
         }
       } catch (e) {

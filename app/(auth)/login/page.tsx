@@ -20,7 +20,7 @@ export default function LoginPage() {
       setIdentifier("10245"); // Contoh NIS Siswa
       setPassword("murid123");
     } else if (selectedRole === "guru") {
-      setIdentifier("199110042022211007"); // NIP Guru
+      setIdentifier("199002042022211009"); // NIP Guru (Very Kurniawan, S.Pd., Gr.)
       setPassword("guru123");
     } else {
       setIdentifier("admin@smk.sch.id");

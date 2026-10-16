@@ -521,7 +521,7 @@ export const SIMULASI_TKA_PACKAGE: BankSoalPackage = {
   tingkat: "XII",
   fase: "Fase F",
   jurusan: "Broadcasting & Perfilman",
-  guruPengampu: "Saputra Indra Purnama, S.Pd.",
+  guruPengampu: "Very Kurniawan, S.Pd., Gr.",
   kkm: 75,
   durasiMenit: 90,
   jmlPg: 30,

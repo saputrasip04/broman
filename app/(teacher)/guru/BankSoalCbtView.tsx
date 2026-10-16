@@ -36,9 +36,10 @@ import {
   ShieldCheck,
   FolderPlus,
   FileText,
-  Calendar,
   AlertTriangle,
   Copy,
+  User,
+  Calendar,
 } from "lucide-react";
 import {
   useBankSoalStore,
@@ -59,11 +60,13 @@ import {
 interface BankSoalCbtViewProps {
   onNavigateToFormatSoal?: () => void;
   showToast?: (message: string) => void;
+  currentTeacherName?: string;
 }
 
 export default function BankSoalCbtView({
   onNavigateToFormatSoal,
   showToast,
+  currentTeacherName = "Very Kurniawan, S.Pd., Gr.",
 }: BankSoalCbtViewProps) {
   const bankPackages = useBankSoalStore();
 
@@ -82,7 +85,13 @@ export default function BankSoalCbtView({
   const [pkgTingkat, setPkgTingkat] = useState<"X" | "XI" | "XII">("X");
   const [pkgFase, setPkgFase] = useState<"Fase E" | "Fase F">("Fase E");
   const [pkgJurusan, setPkgJurusan] = useState("Broadcasting & Perfilman");
-  const [pkgGuru, setPkgGuru] = useState("Saputra Indra Purnama, S.Pd.");
+  const [pkgGuru, setPkgGuru] = useState(currentTeacherName);
+
+  useEffect(() => {
+    if (currentTeacherName) {
+      setPkgGuru(currentTeacherName);
+    }
+  }, [currentTeacherName]);
   const [pkgKkm, setPkgKkm] = useState(75);
   const [pkgDurasi, setPkgDurasi] = useState(90);
   const [pkgJmlPg, setPkgJmlPg] = useState(40);
@@ -166,7 +175,7 @@ export default function BankSoalCbtView({
     setPkgTingkat("X");
     setPkgFase("Fase E");
     setPkgJurusan("Broadcasting & Perfilman");
-    setPkgGuru("Saputra Indra Purnama, S.Pd.");
+    setPkgGuru(currentTeacherName || "Very Kurniawan, S.Pd., Gr.");
     setPkgKkm(75);
     setPkgDurasi(90);
     setPkgJmlPg(40);
@@ -188,7 +197,11 @@ export default function BankSoalCbtView({
     setPkgTingkat(pkg.tingkat);
     setPkgFase(pkg.fase);
     setPkgJurusan(pkg.jurusan);
-    setPkgGuru(pkg.guruPengampu);
+    setPkgGuru(
+      !pkg.guruPengampu || pkg.guruPengampu === "Saputra Indra Purnama, S.Pd."
+        ? (currentTeacherName || "Very Kurniawan, S.Pd., Gr.")
+        : pkg.guruPengampu
+    );
     setPkgKkm(pkg.kkm);
     setPkgDurasi(pkg.durasiMenit);
     setPkgJmlPg(pkg.jmlPg);
@@ -512,6 +525,12 @@ export default function BankSoalCbtView({
             <p className="text-xs text-slate-500 mt-1">
               Manajemen paket soal ujian berbasis komputer (CBT). Setiap paket memuat butir soal Pilihan Ganda (5 Opsi A–E) dan Esai, bobot nilai, serta kontrol pengacakan soal.
             </p>
+            <div className="mt-2.5 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200 shadow-sm">
+                <User className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Akun Guru CBT: <strong>{currentTeacherName || "Very Kurniawan, S.Pd., Gr."}</strong></span>
+              </span>
+            </div>
           </div>
 
           {/* Quick Action Buttons */}
@@ -765,7 +784,7 @@ export default function BankSoalCbtView({
                             {pkg.jurusan}
                           </span>
                           <span className="text-[10px] text-slate-500">
-                            • {pkg.guruPengampu}
+                            • {!pkg.guruPengampu || pkg.guruPengampu === "Saputra Indra Purnama, S.Pd." ? (currentTeacherName || "Very Kurniawan, S.Pd., Gr.") : pkg.guruPengampu}
                           </span>
                         </div>
                       </td>
@@ -1890,7 +1909,7 @@ export default function BankSoalCbtView({
                   <p><strong>Tingkat / Fase:</strong> {printTargetPackage.tingkat} ({printTargetPackage.fase})</p>
                 </div>
                 <div>
-                  <p><strong>Guru Pengampu:</strong> {printTargetPackage.guruPengampu}</p>
+                  <p><strong>Guru Pengampu:</strong> {!printTargetPackage.guruPengampu || printTargetPackage.guruPengampu === "Saputra Indra Purnama, S.Pd." ? (currentTeacherName || "Very Kurniawan, S.Pd., Gr.") : printTargetPackage.guruPengampu}</p>
                   <p><strong>Alokasi Waktu:</strong> {printTargetPackage.durasiMenit} Menit</p>
                   <p><strong>Jumlah Soal:</strong> {printTargetPackage.questions?.length || 0} Butir (5 Opsi A-E)</p>
                 </div>

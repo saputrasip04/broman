@@ -91,6 +91,7 @@ import {
 } from "@/lib/data/curriculum-store";
 import BankSoalCbtView from "./BankSoalCbtView";
 import SlideDeckManagerView from "./SlideDeckManagerView";
+import { apiUrl } from "@/lib/api-client";
 
 type SidebarMenuKey =
   | "dashboard"
@@ -179,16 +180,32 @@ function TeacherPortalContent() {
     return () => clearInterval(timer);
   }, []);
 
-  // Deteksi sesi role pengguna (Guru vs Super Admin)
+  // Deteksi sesi pengguna aktif (Very Kurniawan, S.Pd., Gr. / akun login aktif)
   const [userRole, setUserRole] = useState<string>("guru");
+  const [teacherName, setTeacherName] = useState<string>("Very Kurniawan, S.Pd., Gr.");
+  const [teacherNip, setTeacherNip] = useState<string>("199002042022211009");
+  const [teacherEmail, setTeacherEmail] = useState<string>("verykurniawan42@guru.smk.belajar.id");
+
   useEffect(() => {
-    fetch("/broman/api/auth/me")
+    fetch(apiUrl("/api/auth/me"))
       .then((res) => res.json())
       .then((data) => {
-        if (data?.user?.role) setUserRole(data.user.role);
+        if (data?.user) {
+          if (data.user.role) setUserRole(data.user.role);
+          if (data.user.name) setTeacherName(data.user.name);
+          if (data.user.identifier) setTeacherNip(data.user.identifier);
+          if (data.user.email) setTeacherEmail(data.user.email);
+        }
       })
-      .catch(() => {});
+      .catch((e) => console.error("Error fetching auth me:", e));
   }, []);
+
+  const teacherInitials = teacherName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("") || "VK";
 
   // Sync URL query params (e.g. ?pg=formatsoal atau ?pg=banksoal)
   useEffect(() => {
@@ -980,10 +997,10 @@ ANS: Mengkoordinasikan anggaran produksi, memimpin riset & penyusunan jadwal syu
               className="flex items-center gap-2.5 pl-2.5 py-1 pr-2 rounded-full hover:bg-white/10 border-l border-white/20 text-white transition-all focus:outline-none"
             >
               <div className="h-7 w-7 rounded-full bg-slate-900 border border-white/40 flex items-center justify-center text-white font-bold text-xs shadow-sm overflow-hidden">
-                <User className="h-4 w-4 text-amber-300" />
+                <span className="text-[10px] font-black text-amber-300">{teacherInitials}</span>
               </div>
               <span className="hidden md:inline-block text-xs font-semibold tracking-tight">
-                Saputra Indra Purnama, S.Pd.
+                {teacherName}
               </span>
               <ChevronDown className="h-3.5 w-3.5 text-white/80" />
             </button>
@@ -991,9 +1008,11 @@ ANS: Mengkoordinasikan anggaran produksi, memimpin riset & penyusunan jadwal syu
             {profileDropdownOpen && (
               <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-slate-200 shadow-2xl p-2 z-50 text-slate-800 text-xs animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-2 border-b border-slate-100">
-                  <div className="font-bold text-slate-900">Saputra Indra Purnama, S.Pd.</div>
-                  <div className="text-[11px] text-slate-500 font-mono">199110042022211007</div>
-                  <div className="text-[10px] text-sky-600 font-semibold mt-0.5">Guru Mata Pelajaran BCF</div>
+                  <div className="font-bold text-slate-900">{teacherName}</div>
+                  <div className="text-[11px] text-slate-500 font-mono">{teacherNip}</div>
+                  <div className="text-[10px] text-sky-600 font-semibold mt-0.5">
+                    {userRole === "super_admin" ? "Super Administrator" : "Guru Mata Pelajaran BCF"}
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -1264,15 +1283,15 @@ ANS: Mengkoordinasikan anggaran produksi, memimpin riset & penyusunan jadwal syu
                   </div>
                   <div>
                     <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                      Saputra Indra Purnama, S.Pd.
+                      {teacherName}
                     </h2>
                     <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs">
                       <span className="font-mono bg-slate-800/90 border border-slate-700/80 px-2.5 py-0.5 rounded-lg text-slate-300">
-                        🪪 199110042022211007
+                        🪪 {teacherNip}
                       </span>
                       <span className="inline-flex items-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold px-3 py-0.5 rounded-lg shadow-sm">
                         <User className="h-3 w-3" />
-                        <span>Guru Mata Pelajaran</span>
+                        <span>{userRole === "super_admin" ? "Super Administrator" : "Guru Mata Pelajaran"}</span>
                       </span>
                     </div>
                   </div>
@@ -1442,6 +1461,7 @@ ANS: Mengkoordinasikan anggaran produksi, memimpin riset & penyusunan jadwal syu
           {/* ========================================================== */}
           {activeSidebarMenu === "bank_soal" && (
             <BankSoalCbtView
+              currentTeacherName={teacherName}
               onNavigateToFormatSoal={() => {
                 setActiveSidebarMenu("format_broman");
                 setActiveFormatTab("format_cbt");
@@ -2186,13 +2206,13 @@ ANS: Mengkoordinasikan anggaran produksi, memimpin riset & penyusunan jadwal syu
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
                 <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
                   <div className="h-16 w-16 rounded-2xl bg-[#2563eb] text-white flex items-center justify-center font-black text-xl shadow-md">
-                    SIP
+                    {teacherInitials}
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900">Saputra Indra Purnama, S.Pd.</h2>
-                    <div className="text-xs text-slate-500 font-mono">NIP. 199110042022211007</div>
+                    <h2 className="text-lg font-bold text-slate-900">{teacherName}</h2>
+                    <div className="text-xs text-slate-500 font-mono">NIP/ID. {teacherNip}</div>
                     <span className="inline-block rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 mt-1">
-                      Guru Aktif BroMan
+                      {userRole === "super_admin" ? "Super Admin BroMan" : "Guru Aktif BroMan"}
                     </span>
                   </div>
                 </div>

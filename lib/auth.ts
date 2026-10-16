@@ -24,11 +24,11 @@ export const DEMO_USERS: Record<UserRole, UserSession> = {
     kelas: "X BCF 1",
   },
   guru: {
-    id: "usr-guru-19911004",
-    name: "Saputra Indra Purnama, S.Pd.",
+    id: "usr-guru-199002042022211009",
+    name: "Very Kurniawan, S.Pd., Gr.",
     role: "guru",
-    identifier: "199110042022211007",
-    email: "indra.purnama@smk.sch.id",
+    identifier: "199002042022211009",
+    email: "verykurniawan42@guru.smk.belajar.id",
     kelas: "Guru Mata Pelajaran",
   },
   super_admin: {
