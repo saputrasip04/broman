@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { queryMySQL, checkMySQLStatus } from "@/lib/db/mysql";
 import { randomUUID } from "crypto";
+import {
+  getAllRegisteredUsers,
+  upsertRegisteredUser,
+  toggleRegisteredUserStatus,
+  deleteRegisteredUser,
+} from "@/lib/data/user-registry";
 
 export async function GET() {
   try {
@@ -8,8 +14,8 @@ export async function GET() {
     if (!dbStatus.connected) {
       return NextResponse.json({
         success: true,
-        source: "memory_fallback",
-        users: [],
+        source: "cloud_registry",
+        users: getAllRegisteredUsers(),
       });
     }
 
@@ -55,6 +61,19 @@ export async function GET() {
       isActive: Boolean(u.isActive),
     }));
 
+    // Sinkronkan ke registry memori agar konsisten
+    formatted.forEach((u) => {
+      upsertRegisteredUser({
+        id: u.id,
+        name: u.name,
+        identifier: u.identifier,
+        role: u.role,
+        email: u.email,
+        kelas: u.kelas,
+        isActive: u.isActive,
+      });
+    });
+
     return NextResponse.json({
       success: true,
       source: "mysql_xampp",
@@ -70,32 +89,29 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const dbStatus = await checkMySQLStatus();
-    if (!dbStatus.connected) {
-      return NextResponse.json(
-        { success: false, error: "Database MySQL tidak terhubung" },
-        { status: 503 }
-      );
-    }
 
     // 1. Aksi Toggle Status Akun (Aktif / Nonaktif)
     if (body.action === "toggle_status" && body.id) {
       const nextActive = Boolean(body.isActive);
-      await queryMySQL(
-        "UPDATE profiles SET is_active = ?, updated_at = NOW() WHERE id = ?",
-        [nextActive ? 1 : 0, body.id]
-      );
+      toggleRegisteredUserStatus(body.id, nextActive);
 
-      // Catat log aktivitas
-      const logId = randomUUID();
-      await queryMySQL(
-        `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
-         VALUES (?, 'usr-admin-01', 'TOGGLE_USER_STATUS', 'profiles', ?, ?)`,
-        [logId, body.id, JSON.stringify({ is_active: nextActive })]
-      );
+      if (dbStatus.connected) {
+        await queryMySQL(
+          "UPDATE profiles SET is_active = ?, updated_at = NOW() WHERE id = ?",
+          [nextActive ? 1 : 0, body.id]
+        );
+
+        const logId = randomUUID();
+        await queryMySQL(
+          `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
+           VALUES (?, 'usr-admin-01', 'TOGGLE_USER_STATUS', 'profiles', ?, ?)`,
+          [logId, body.id, JSON.stringify({ is_active: nextActive })]
+        );
+      }
 
       return NextResponse.json({
         success: true,
-        message: `Status pengguna berhasil diperbarui di basis data MySQL`,
+        message: `Status pengguna berhasil diperbarui`,
       });
     }
 
@@ -113,56 +129,57 @@ export async function POST(req: NextRequest) {
       const cleanRole = ["super_admin", "guru", "murid"].includes(role) ? role : "murid";
       const cleanEmail = email ? String(email).trim() : `${cleanIdentifier}@smk.sch.id`;
 
-      // Update data di profiles
-      await queryMySQL(
-        `UPDATE profiles 
-         SET full_name = ?, role = ?, identifier = ?, email = ?, updated_at = NOW()
-         WHERE id = ?`,
-        [name.trim(), cleanRole, cleanIdentifier, cleanEmail, id]
-      );
+      const savedUser = upsertRegisteredUser({
+        id,
+        name: name.trim(),
+        identifier: cleanIdentifier,
+        role: cleanRole,
+        email: cleanEmail,
+        kelas,
+      });
 
-      // Sinkronkan relasi kelas di class_members
-      if (cleanRole === "murid" && kelas) {
-        const clsRes = await queryMySQL<{ id: string }>(
-          "SELECT id FROM classes WHERE name = ? LIMIT 1",
-          [kelas.trim()]
+      if (dbStatus.connected) {
+        await queryMySQL(
+          `UPDATE profiles 
+           SET full_name = ?, role = ?, identifier = ?, email = ?, updated_at = NOW()
+           WHERE id = ?`,
+          [name.trim(), cleanRole, cleanIdentifier, cleanEmail, id]
         );
-        if (clsRes.success && clsRes.data && clsRes.data.length > 0) {
-          const classId = clsRes.data[0].id;
-          await queryMySQL("DELETE FROM class_members WHERE user_id = ?", [id]);
-          await queryMySQL(
-            `INSERT INTO class_members (class_id, user_id, member_role)
-             VALUES (?, ?, 'murid')`,
-            [classId, id]
-          );
-        }
-      } else {
-        await queryMySQL("DELETE FROM class_members WHERE user_id = ?", [id]);
-      }
 
-      // Catat log aktivitas
-      const logId = randomUUID();
-      await queryMySQL(
-        `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
-         VALUES (?, 'usr-admin-01', 'UPDATE_USER', 'profiles', ?, ?)`,
-        [
-          logId,
-          id,
-          JSON.stringify({ name: name.trim(), role: cleanRole, identifier: cleanIdentifier, kelas }),
-        ]
-      );
+        if (cleanRole === "murid" && kelas) {
+          const clsRes = await queryMySQL<{ id: string }>(
+            "SELECT id FROM classes WHERE name = ? LIMIT 1",
+            [kelas.trim()]
+          );
+          if (clsRes.success && clsRes.data && clsRes.data.length > 0) {
+            const classId = clsRes.data[0].id;
+            await queryMySQL("DELETE FROM class_members WHERE user_id = ?", [id]);
+            await queryMySQL(
+              `INSERT INTO class_members (class_id, user_id, member_role)
+               VALUES (?, ?, 'murid')`,
+              [classId, id]
+            );
+          }
+        } else {
+          await queryMySQL("DELETE FROM class_members WHERE user_id = ?", [id]);
+        }
+
+        const logId = randomUUID();
+        await queryMySQL(
+          `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
+           VALUES (?, 'usr-admin-01', 'UPDATE_USER', 'profiles', ?, ?)`,
+          [
+            logId,
+            id,
+            JSON.stringify({ name: name.trim(), role: cleanRole, identifier: cleanIdentifier, kelas }),
+          ]
+        );
+      }
 
       return NextResponse.json({
         success: true,
-        message: `Data pengguna ${name} berhasil diperbarui di basis data MySQL`,
-        user: {
-          id,
-          name: name.trim(),
-          identifier: cleanIdentifier,
-          role: cleanRole,
-          email: cleanEmail,
-          kelas: cleanRole === "murid" ? kelas : (cleanRole === "guru" ? "Guru Pengampu" : "Kepala Lab BCF"),
-        },
+        message: `Data pengguna ${name} berhasil diperbarui`,
+        user: savedUser,
       });
     }
 
@@ -177,53 +194,65 @@ export async function POST(req: NextRequest) {
           item.id ||
           `usr-${role}-${item.identifier.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()}`;
 
-        await queryMySQL(
-          `INSERT INTO profiles (id, full_name, role, identifier, email, is_active)
-           VALUES (?, ?, ?, ?, ?, 1)
-           ON DUPLICATE KEY UPDATE
-             full_name = VALUES(full_name),
-             role = VALUES(role),
-             email = VALUES(email),
-             is_active = 1`,
-          [userId, item.name.trim(), role, item.identifier.trim(), email.trim()]
-        );
+        upsertRegisteredUser({
+          id: userId,
+          name: item.name,
+          identifier: item.identifier,
+          role,
+          email,
+          kelas: item.kelas,
+        });
 
-        // Jika murid dan kelas ditentukan, masukkan ke class_members
-        if (role === "murid" && item.kelas) {
-          const clsRes = await queryMySQL<{ id: string }>(
-            "SELECT id FROM classes WHERE name = ? LIMIT 1",
-            [item.kelas.trim()]
+        if (dbStatus.connected) {
+          await queryMySQL(
+            `INSERT INTO profiles (id, full_name, role, identifier, email, is_active)
+             VALUES (?, ?, ?, ?, ?, 1)
+             ON DUPLICATE KEY UPDATE
+               full_name = VALUES(full_name),
+               role = VALUES(role),
+               email = VALUES(email),
+               is_active = 1`,
+            [userId, item.name.trim(), role, String(item.identifier).trim(), email.trim()]
           );
-          if (clsRes.success && clsRes.data && clsRes.data.length > 0) {
-            const classId = clsRes.data[0].id;
-            await queryMySQL(
-              `INSERT INTO class_members (class_id, user_id, member_role)
-               VALUES (?, ?, 'murid')
-               ON DUPLICATE KEY UPDATE member_role = 'murid'`,
-              [classId, userId]
+
+          if (role === "murid" && item.kelas) {
+            const clsRes = await queryMySQL<{ id: string }>(
+              "SELECT id FROM classes WHERE name = ? LIMIT 1",
+              [item.kelas.trim()]
             );
+            if (clsRes.success && clsRes.data && clsRes.data.length > 0) {
+              const classId = clsRes.data[0].id;
+              await queryMySQL(
+                `INSERT INTO class_members (class_id, user_id, member_role)
+                 VALUES (?, ?, 'murid')
+                 ON DUPLICATE KEY UPDATE member_role = 'murid'`,
+                [classId, userId]
+              );
+            }
           }
         }
         insertedCount++;
       }
 
-      // Catat log aktivitas
-      const logId = randomUUID();
-      await queryMySQL(
-        `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
-         VALUES (?, 'usr-admin-01', 'BATCH_IMPORT_USERS', 'profiles', 'batch', ?)`,
-        [logId, JSON.stringify({ count: insertedCount })]
-      );
+      if (dbStatus.connected) {
+        const logId = randomUUID();
+        await queryMySQL(
+          `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
+           VALUES (?, 'usr-admin-01', 'BATCH_IMPORT_USERS', 'profiles', 'batch', ?)`,
+          [logId, JSON.stringify({ count: insertedCount })]
+        );
+      }
 
       return NextResponse.json({
         success: true,
-        message: `${insertedCount} pengguna berhasil disimpan ke basis data MySQL`,
+        message: `Berhasil mengimpor dan memperbarui ${insertedCount} akun pengguna`,
         count: insertedCount,
       });
     }
 
-    // 3. Tambah atau Perbarui Pengguna Tunggal
+    // 3. Tambah Akun Pengguna Tunggal
     const { name, identifier, role = "murid", email, kelas } = body;
+
     if (!name || !identifier) {
       return NextResponse.json(
         { success: false, error: "Nama dan Nomor Identitas (NIS/NIP) wajib diisi" },
@@ -238,59 +267,60 @@ export async function POST(req: NextRequest) {
       body.id ||
       `usr-${cleanRole}-${cleanIdentifier.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()}`;
 
-    // Simpan ke profiles
-    await queryMySQL(
-      `INSERT INTO profiles (id, full_name, role, identifier, email, is_active)
-       VALUES (?, ?, ?, ?, ?, 1)
-       ON DUPLICATE KEY UPDATE
-         full_name = VALUES(full_name),
-         role = VALUES(role),
-         email = VALUES(email),
-         is_active = 1`,
-      [userId, name.trim(), cleanRole, cleanIdentifier, cleanEmail]
-    );
+    const savedUser = upsertRegisteredUser({
+      id: userId,
+      name: name.trim(),
+      identifier: cleanIdentifier,
+      role: cleanRole,
+      email: cleanEmail,
+      kelas,
+      isActive: true,
+    });
 
-    // Jika murid dan kelas ditentukan, hubungkan ke class_members
-    if (cleanRole === "murid" && kelas) {
-      const clsRes = await queryMySQL<{ id: string }>(
-        "SELECT id FROM classes WHERE name = ? LIMIT 1",
-        [kelas.trim()]
+    if (dbStatus.connected) {
+      await queryMySQL(
+        `INSERT INTO profiles (id, full_name, role, identifier, email, is_active)
+         VALUES (?, ?, ?, ?, ?, 1)
+         ON DUPLICATE KEY UPDATE
+           full_name = VALUES(full_name),
+           role = VALUES(role),
+           email = VALUES(email),
+           is_active = 1`,
+        [userId, name.trim(), cleanRole, cleanIdentifier, cleanEmail]
       );
-      if (clsRes.success && clsRes.data && clsRes.data.length > 0) {
-        const classId = clsRes.data[0].id;
-        await queryMySQL(
-          `INSERT INTO class_members (class_id, user_id, member_role)
-           VALUES (?, ?, 'murid')
-           ON DUPLICATE KEY UPDATE member_role = 'murid'`,
-          [classId, userId]
-        );
-      }
-    }
 
-    // Catat log aktivitas
-    const logId = randomUUID();
-    await queryMySQL(
-      `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
-       VALUES (?, 'usr-admin-01', 'UPSERT_USER', 'profiles', ?, ?)`,
-      [
-        logId,
-        userId,
-        JSON.stringify({ name: name.trim(), role: cleanRole, identifier: cleanIdentifier, kelas }),
-      ]
-    );
+      if (cleanRole === "murid" && kelas) {
+        const clsRes = await queryMySQL<{ id: string }>(
+          "SELECT id FROM classes WHERE name = ? LIMIT 1",
+          [kelas.trim()]
+        );
+        if (clsRes.success && clsRes.data && clsRes.data.length > 0) {
+          const classId = clsRes.data[0].id;
+          await queryMySQL(
+            `INSERT INTO class_members (class_id, user_id, member_role)
+             VALUES (?, ?, 'murid')
+             ON DUPLICATE KEY UPDATE member_role = 'murid'`,
+            [classId, userId]
+          );
+        }
+      }
+
+      const logId = randomUUID();
+      await queryMySQL(
+        `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
+         VALUES (?, 'usr-admin-01', 'UPSERT_USER', 'profiles', ?, ?)`,
+        [
+          logId,
+          userId,
+          JSON.stringify({ name: name.trim(), role: cleanRole, identifier: cleanIdentifier, kelas }),
+        ]
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Pengguna ${name} berhasil disimpan ke basis data MySQL`,
-      user: {
-        id: userId,
-        name: name.trim(),
-        identifier: cleanIdentifier,
-        role: cleanRole,
-        email: cleanEmail,
-        kelas: cleanRole === "murid" ? kelas : (cleanRole === "guru" ? "Guru Pengampu" : "Kepala Lab BCF"),
-        isActive: true,
-      },
+      message: `Pengguna ${name} berhasil disimpan`,
+      user: savedUser,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -300,14 +330,6 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const dbStatus = await checkMySQLStatus();
-    if (!dbStatus.connected) {
-      return NextResponse.json(
-        { success: false, error: "Database MySQL tidak terhubung" },
-        { status: 503 }
-      );
-    }
-
     const body = await req.json().catch(() => ({}));
     const { searchParams } = new URL(req.url);
     const id = body.id || searchParams.get("id");
@@ -327,19 +349,23 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await queryMySQL("DELETE FROM profiles WHERE id = ?", [id]);
+    deleteRegisteredUser(id);
 
-    // Catat log aktivitas
-    const logId = randomUUID();
-    await queryMySQL(
-      `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
-       VALUES (?, 'usr-admin-01', 'DELETE_USER', 'profiles', ?, ?)`,
-      [logId, id, JSON.stringify({ deletedUserId: id })]
-    );
+    const dbStatus = await checkMySQLStatus();
+    if (dbStatus.connected) {
+      await queryMySQL("DELETE FROM profiles WHERE id = ?", [id]);
+
+      const logId = randomUUID();
+      await queryMySQL(
+        `INSERT INTO activity_logs (id, user_id, action, entity, entity_id, meta)
+         VALUES (?, 'usr-admin-01', 'DELETE_USER', 'profiles', ?, ?)`,
+        [logId, id, JSON.stringify({ deletedUserId: id })]
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Pengguna berhasil dihapus dari basis data MySQL`,
+      message: `Pengguna berhasil dihapus`,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);

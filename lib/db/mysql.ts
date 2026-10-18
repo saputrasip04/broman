@@ -26,6 +26,8 @@ let pool: mysql.Pool | null = null;
 export function getMySQLPool(): mysql.Pool {
   if (!pool) {
     const config = getMySQLConfig();
+    const isCloud = config.host !== "localhost" && config.host !== "127.0.0.1";
+
     pool = mysql.createPool({
       host: config.host,
       port: config.port,
@@ -35,7 +37,10 @@ export function getMySQLPool(): mysql.Pool {
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
-      connectTimeout: 3000, // Timeout 3 detik untuk pencegahan freeze jika MySQL mati
+      connectTimeout: isCloud ? 10000 : 3000,
+      ssl: isCloud || process.env.MYSQL_SSL === "true"
+        ? { minVersion: "TLSv1.2", rejectUnauthorized: false }
+        : undefined,
     });
   }
   return pool;
