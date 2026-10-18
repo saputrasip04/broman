@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/broman",
+        basePath: false,
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
