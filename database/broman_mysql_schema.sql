@@ -511,13 +511,13 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- A. Profiles Pengguna Baku (Admin, Guru, Siswa)
 INSERT INTO `profiles` (`id`, `full_name`, `role`, `identifier`, `email`, `is_active`) VALUES
 ('usr-admin-01', 'Administrator BroMan', 'super_admin', 'admin@smk.sch.id', 'admin@smk.sch.id', 1),
-('usr-guru-19911004', 'Saputra Indra Purnama, S.Pd.', 'guru', '199110042022211007', 'indra.purnama@smk.sch.id', 1),
-('usr-guru-bambang', 'Bambang Sudibyo, S.Sn., M.Pd.', 'guru', '198501012010011001', 'bambang.sudibyo@smk.sch.id', 1),
-('usr-guru-ratna', 'Ratna Sari, M.Ds.', 'guru', '199003152015022002', 'ratna.sari@smk.sch.id', 1),
-('usr-murid-10245', 'Rizky Ramadhan', 'murid', '10245', 'rizky.ramadhan@siswa.smk.sch.id', 1),
-('usr-murid-10246', 'Siti Nurhaliza', 'murid', '10246', 'siti.nurhaliza@siswa.smk.sch.id', 1),
-('usr-murid-10247', 'Dimas Anggara', 'murid', '10247', 'dimas.anggara@siswa.smk.sch.id', 1)
-ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`);
+('usr-guru-198703072022212011', 'Latifah Ardiana, S.Kom.', 'guru', '198703072022212011', 'latifahardiana73@guru.smk.belajar.id', 1),
+('usr-guru-199002042022211009', 'Very Kurniawan, S.Pd., Gr.', 'guru', '199002042022211009', 'verykurniawan42@guru.smk.belajar.id', 1),
+('usr-guru-199110042022211007', 'Saputra Indra Purnama, S.Pd., Gr.', 'guru', '199110042022211007', 'saputrapurnama40@guru.belajar.id', 1),
+('usr-guru-199404252020121012', 'Muhammad Apri Sastriyono, S.Tr.KM., Gr.', 'guru', '199404252020121012', 'muhammadsastriyono54@guru.smk.belajar.id', 1),
+('usr-guru-199612072025211070', 'Nanda Irvan Sodikin, S.Kom., Gr.', 'guru', '199612072025211070', 'nanda.irvan45@guru.smk.belajar.id', 1),
+('usr-murid-123456', 'Abi Muslihin', 'murid', '123456', 'abimuslihin@gmail.com', 1)
+ON DUPLICATE KEY UPDATE `full_name` = VALUES(`full_name`), `email` = VALUES(`email`);
 
 -- B. Tahun Ajaran & Rombel Kelas
 INSERT INTO `academic_years` (`id`, `name`, `semester`, `is_active`) VALUES
