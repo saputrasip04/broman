@@ -40,7 +40,7 @@ echo 3. Memverifikasi tabel di broman_db...
 
 echo.
 echo 4. Menyinkronkan Gateway ^& Reverse Proxy Apache XAMPP ke http://localhost/broman...
-powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'F:\XAMPP\htdocs\broman' | Out-Null; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\index.php' 'F:\XAMPP\htdocs\broman\index.php' -Force; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\broman-offline.php' 'F:\XAMPP\htdocs\broman-offline.php' -Force; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\httpd-proxy.conf' 'F:\XAMPP\apache\conf\extra\httpd-proxy.conf' -Force; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\Hentikan BroMan.bat' 'F:\XAMPP\htdocs\broman\hentikan-broman.bat' -Force; Set-Content 'F:\XAMPP\htdocs\broman\start-broman.bat' ('@echo off' + [Environment]::NewLine + 'call \"f:\APPPSPT\BroMan\buka-broman.bat\"')"
+powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path 'F:\XAMPP\htdocs\broman' | Out-Null; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\index.php' 'F:\XAMPP\htdocs\broman\index.php' -Force; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\broman-offline.php' 'F:\XAMPP\htdocs\broman-offline.php' -Force; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\httpd-proxy.conf' 'F:\XAMPP\apache\conf\extra\httpd-proxy.conf' -Force; Copy-Item 'f:\APPPSPT\BroMan\public\xampp\Hentikan BroMan.bat' 'F:\XAMPP\htdocs\broman\hentikan-broman.bat' -Force; Set-Content 'F:\XAMPP\htdocs\broman\start-broman.bat' ('@echo off' + [Environment]::NewLine + 'cd /d ""%~dp0""' + [Environment]::NewLine + 'call buka-broman.bat')"
 echo    [OK] Gateway XAMPP, proxy config, dan fallback offline berhasil disinkronkan.
 
 echo.
