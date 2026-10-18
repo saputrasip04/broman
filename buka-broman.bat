@@ -7,7 +7,7 @@ echo    BROMAN - MEDIA PEMBELAJARAN BROADCASTING DAN PERFILMAN SMK
 echo =======================================================================
 echo.
 
-cd /d "F:\APPPSPT\BroMan"
+cd /d "%~dp0"
 
 :: Parameter: --no-browser untuk inisialisasi background dari gateway PHP
 set NO_BROWSER=0
@@ -67,7 +67,7 @@ curl.exe -s -o nul -w "%%{http_code}" http://127.0.0.1:3000/broman/api/health 2>
 if %errorlevel% equ 0 goto WARMUP_APP
 
 echo Memulai server BroMan (npm run dev)...
-start "BroMan Next.js Server" /min cmd /c "cd /d F:\APPPSPT\BroMan && npm run dev"
+start "BroMan Next.js Server" /min cmd /c "cd /d \"%~dp0\" && npm run dev"
 echo Menunggu inisialisasi Next.js (maks. 35 detik)...
 
 set ATTEMPTS=0
