@@ -243,6 +243,19 @@ export default function BabLearningClient({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Helper untuk scroll mulus ke stage pembelajaran pada tampilan mobile
+  const scrollToStage = () => {
+    if (typeof window !== "undefined") {
+      const stageEl = document.getElementById("learning-stage");
+      if (stageEl && window.innerWidth < 1024) {
+        const topOffset = stageEl.getBoundingClientRect().top + window.scrollY - 70;
+        window.scrollTo({ top: Math.max(0, topOffset), behavior: "smooth" });
+        return;
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   // Navigasi Langkah Belajar
   const goToNextStep = () => {
     if (currentStepIndex < steps.length - 1) {
@@ -250,14 +263,25 @@ export default function BabLearningClient({
       setCurrentStepIndex(next);
       markCurrentStepDone(currentStepIndex);
       markCurrentStepDone(next);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("step", String(next + 1));
+        window.history.replaceState({}, "", url.toString());
+      }
+      scrollToStage();
     }
   };
 
   const goToPrevStep = () => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex((prev) => prev - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const prev = currentStepIndex - 1;
+      setCurrentStepIndex(prev);
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("step", String(prev + 1));
+        window.history.replaceState({}, "", url.toString());
+      }
+      scrollToStage();
     }
   };
 
@@ -673,7 +697,7 @@ export default function BabLearningClient({
         {/* =================================================================== */}
         {/* SIDEBAR NAVIGASI MENU & SUBMENU 9 LANGKAH (GAMBAR 2)                 */}
         {/* =================================================================== */}
-        <aside className="lg:col-span-4 sticky top-20 space-y-4">
+        <aside className="lg:col-span-4 lg:sticky lg:top-20 space-y-4">
           <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 text-white shadow-2xl space-y-4">
             {/* Header Elemen & Konten Aktif */}
             <div className="space-y-2">
@@ -715,7 +739,7 @@ export default function BabLearningClient({
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
                 Menu & Submenu Belajar:
               </span>
-              <div className="space-y-1.5 max-h-[500px] overflow-y-auto pr-1">
+              <div className="space-y-1.5 lg:max-h-[520px] lg:overflow-y-auto pr-1">
                 {steps.map((st, idx) => {
                   const Icon = st.icon;
                   const isActive = currentStepIndex === idx;
@@ -735,7 +759,7 @@ export default function BabLearningClient({
                             url.searchParams.set("step", String(idx + 1));
                             window.history.replaceState({}, "", url.toString());
                           }
-                          window.scrollTo({ top: 0, behavior: "smooth" });
+                          scrollToStage();
                         }
                       }}
                       className={`w-full text-left p-2.5 rounded-2xl text-xs font-bold transition flex items-center justify-between border ${
@@ -789,18 +813,76 @@ export default function BabLearningClient({
         {/* =================================================================== */}
         {/* KONTEN UTAMA: STAGE LANGKAH AKTIF                                   */}
         {/* =================================================================== */}
-        <main className="lg:col-span-8 space-y-6">
+        <main id="learning-stage" className="lg:col-span-8 space-y-6 scroll-mt-20">
+          {/* Mobile Step Navigator Bar (Khusus Layar HP < 1024px) */}
+          <div className="lg:hidden rounded-2xl border border-slate-800 bg-slate-900/95 p-3 backdrop-blur-xl shadow-xl space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+              <span className="flex items-center gap-1.5">
+                <span className="text-sky-400 font-extrabold">Langkah {currentStepIndex + 1}</span> dari {steps.length}:{" "}
+                <span className="text-white truncate max-w-[150px]">{currentStep?.title}</span>
+              </span>
+              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                {completedCount}/{steps.length} Selesai
+              </span>
+            </div>
+
+            {/* Horizontal Scrollable Step Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {steps.map((st, idx) => {
+                const isActive = currentStepIndex === idx;
+                const isCompleted = Boolean(completedSteps[idx]);
+
+                return (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => {
+                      setCurrentStepIndex(idx);
+                      markCurrentStepDone(idx);
+                      if (typeof window !== "undefined") {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("step", String(idx + 1));
+                        window.history.replaceState({}, "", url.toString());
+                      }
+                      scrollToStage();
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition active:scale-95 border ${
+                      isActive
+                        ? "bg-gradient-to-r from-sky-500 to-indigo-600 border-sky-400 text-white shadow-md shadow-sky-500/25"
+                        : isCompleted
+                        ? "bg-slate-950/80 border-slate-800 text-emerald-300 hover:bg-slate-800"
+                        : "bg-slate-950/50 border-slate-800/80 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <span
+                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${
+                        isActive
+                          ? "bg-white text-indigo-700"
+                          : isCompleted
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                          : "bg-slate-800 text-slate-400"
+                      }`}
+                    >
+                      {isCompleted ? "✓" : idx + 1}
+                    </span>
+                    <span>{st.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Top Stage Banner */}
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6 backdrop-blur-xl shadow-xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-sky-500/15 text-sky-400 border border-sky-500/25 flex items-center justify-center font-black">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 sm:p-6 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-sky-500/15 text-sky-400 border border-sky-500/25 flex items-center justify-center font-black shrink-0">
                 {currentStepIndex + 1}
               </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400">
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 block truncate">
                   {activeContent ? `${currentShortTitle} • ` : ""}Langkah {currentStepIndex + 1} dari {steps.length}
                 </span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-white">
+                <h2 className="text-base sm:text-xl font-extrabold text-white leading-tight">
                   {currentStep?.title}
                 </h2>
               </div>
@@ -808,30 +890,32 @@ export default function BabLearningClient({
 
             {/* Khusus Step Materi: Toggle Switcher View Mode */}
             {currentStepId === "materi" && (
-              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 shrink-0">
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 shrink-0 self-end sm:self-center">
                 <button
                   type="button"
                   onClick={() => setMateriViewMode("slide")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
                     materiViewMode === "slide"
                       ? "bg-sky-500 text-white shadow-xs"
                       : "text-slate-400 hover:text-white"
                   }`}
+                  title="Tampilan Slide Interaktif"
                 >
                   <Layers className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Mode Slide</span>
+                  <span className="text-[11px] sm:text-xs">Slide</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMateriViewMode("cards")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
                     materiViewMode === "cards"
                       ? "bg-sky-500 text-white shadow-xs"
                       : "text-slate-400 hover:text-white"
                   }`}
+                  title="Tampilan Kartu Materi"
                 >
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Mode Kartu</span>
+                  <span className="text-[11px] sm:text-xs">Kartu</span>
                 </button>
               </div>
             )}

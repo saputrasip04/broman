@@ -152,20 +152,20 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-[#0b0f19]/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-amber-500 shadow-lg shadow-sky-500/20 group-hover:scale-105 transition-transform duration-200">
-            <Film className="h-5 w-5 text-white" />
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-amber-500 shadow-lg shadow-sky-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
+            <Film className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
           <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-sky-300 bg-clip-text text-transparent">
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="text-lg sm:text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-sky-300 bg-clip-text text-transparent">
                 BroMan
               </span>
-              <span className="rounded-full bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-sky-400 border border-sky-500/20">
+              <span className="rounded-full bg-sky-500/10 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold text-sky-400 border border-sky-500/20">
                 SMK BCF
               </span>
             </div>
-            <span className="text-[11px] text-slate-400 -mt-1 hidden sm:inline">
+            <span className="text-[10px] sm:text-[11px] text-slate-400 -mt-0.5 hidden sm:inline">
               Broadcasting & Perfilman
             </span>
           </div>
@@ -337,10 +337,10 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-sky-500/20 hover:from-sky-400 hover:to-indigo-500 transition-all hover:shadow-sky-500/30 hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-sky-500/20 hover:from-sky-400 hover:to-indigo-500 transition-all hover:shadow-sky-500/30 hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap shrink-0"
             >
-              <Sparkles className="h-4 w-4" />
-              <span>Masuk Akun</span>
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-sky-200" />
+              <span className="whitespace-nowrap">Masuk Akun</span>
             </Link>
           )}
 
