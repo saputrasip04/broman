@@ -42,3 +42,9 @@ cookies.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# xampp gateway integration files
+/index.php
+/start-broman.bat
+/hentikan-broman.bat
+
