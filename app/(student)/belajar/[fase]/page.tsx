@@ -1,8 +1,5 @@
 import Link from "next/link";
 import { ArrowLeft, Film, Tv, Clock, CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
-import { queryMySQL } from "@/lib/db/mysql";
-
-export const instant = false;
 
 export function generateStaticParams() {
   return [{ fase: "E" }, { fase: "F" }, { fase: "P" }];
@@ -46,23 +43,7 @@ export default async function FaseDetailPage({
         { code: "F8", title: "Penyiaran Online", hours: 28 },
       ];
 
-  // Ambil alokasi JP teranyar dari MySQL jika tersedia
-  let dbHoursMap: Record<string, number> = {};
-  try {
-    const dbRes = await queryMySQL<{ code: string; hours_allocation: number }>(
-      "SELECT code, hours_allocation FROM babs"
-    );
-    if (dbRes.success && dbRes.data) {
-      dbRes.data.forEach((r) => {
-        dbHoursMap[r.code] = Number(r.hours_allocation);
-      });
-    }
-  } catch {}
-
-  const babs = rawBabs.map((b) => ({
-    ...b,
-    hours: dbHoursMap[b.code] ?? b.hours,
-  }));
+  const babs = rawBabs;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
