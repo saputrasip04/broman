@@ -87,7 +87,7 @@ const INITIAL_USERS: StoredUser[] = [
 ];
 
 // Menggunakan globalThis agar state bertahan selama container serverless aktif
-const globalKey = Symbol.for("broman.user_registry");
+const globalKey = Symbol.for("broman.user_registry_v2");
 const globalObj = globalThis as unknown as { [key: symbol]: Map<string, StoredUser> };
 
 if (!globalObj[globalKey]) {
@@ -96,12 +96,33 @@ if (!globalObj[globalKey]) {
     map.set(u.id, u);
   }
   globalObj[globalKey] = map;
+} else {
+  // Sinkronkan 7 profil default dan hapus profil demo lama
+  for (const u of INITIAL_USERS) {
+    globalObj[globalKey].set(u.id, u);
+  }
+  for (const id of Array.from(globalObj[globalKey].keys())) {
+    if (
+      id.startsWith("usr-murid-1024") ||
+      id === "usr-guru-bambang" ||
+      id === "usr-guru-ratna" ||
+      id === "usr-guru-19911004"
+    ) {
+      globalObj[globalKey].delete(id);
+    }
+  }
 }
 
 const userMap: Map<string, StoredUser> = globalObj[globalKey];
 
 export function getAllRegisteredUsers(): StoredUser[] {
-  return Array.from(userMap.values());
+  return Array.from(userMap.values()).sort((a, b) => {
+    const roleOrder: Record<string, number> = { super_admin: 1, guru: 2, murid: 3 };
+    const orderA = roleOrder[a.role] || 4;
+    const orderB = roleOrder[b.role] || 4;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.name.localeCompare(b.name);
+  });
 }
 
 export function findUserByIdentifier(identifier: string): StoredUser | null {
