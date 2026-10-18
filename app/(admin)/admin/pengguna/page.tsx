@@ -17,6 +17,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { UserRole } from "@/lib/types/database";
+import { apiUrl } from "@/lib/api-client";
 
 interface UserItem {
   id: string;
@@ -36,61 +37,61 @@ export default function AdminPenggunaPage() {
       identifier: "admin@smk.sch.id",
       role: "super_admin",
       email: "admin@smk.sch.id",
-      kelas: "Kepala Lab BCF",
+      kelas: "Super Admin Sekolah",
       isActive: true,
     },
     {
-      id: "usr-guru-19911004",
-      name: "Saputra Indra Purnama, S.Pd.",
+      id: "usr-guru-198703072022212011",
+      name: "Latifah Ardiana, S.Kom.",
+      identifier: "198703072022212011",
+      role: "guru",
+      email: "latifahardiana73@guru.smk.belajar.id",
+      kelas: "Guru Pengampu",
+      isActive: true,
+    },
+    {
+      id: "usr-guru-199002042022211009",
+      name: "Very Kurniawan, S.Pd., Gr.",
+      identifier: "199002042022211009",
+      role: "guru",
+      email: "verykurniawan42@guru.smk.belajar.id",
+      kelas: "Guru Pengampu",
+      isActive: true,
+    },
+    {
+      id: "usr-guru-199110042022211007",
+      name: "Saputra Indra Purnama, S.Pd., Gr.",
       identifier: "199110042022211007",
       role: "guru",
-      email: "indra.purnama@smk.sch.id",
+      email: "saputrapurnama40@guru.belajar.id",
       kelas: "Guru Pengampu",
       isActive: true,
     },
     {
-      id: "usr-guru-bambang",
-      name: "Bambang Sudibyo, S.Sn., M.Pd.",
-      identifier: "198501012010011001",
+      id: "usr-guru-199404252020121012",
+      name: "Muhammad Apri Sastriyono, S.Tr.KM., Gr.",
+      identifier: "199404252020121012",
       role: "guru",
-      email: "bambang.sudibyo@smk.sch.id",
+      email: "muhammadsastriyono54@guru.smk.belajar.id",
       kelas: "Guru Pengampu",
       isActive: true,
     },
     {
-      id: "usr-guru-ratna",
-      name: "Ratna Sari, M.Ds.",
-      identifier: "199003152015022002",
+      id: "usr-guru-199612072025211070",
+      name: "Nanda Irvan Sodikin, S.Kom., Gr.",
+      identifier: "199612072025211070",
       role: "guru",
-      email: "ratna.sari@smk.sch.id",
+      email: "nanda.irvan45@guru.smk.belajar.id",
       kelas: "Guru Pengampu",
       isActive: true,
     },
     {
-      id: "usr-murid-10245",
-      name: "Rizky Ramadhan",
-      identifier: "10245",
+      id: "usr-murid-123456",
+      name: "Abi Muslihin",
+      identifier: "123456",
       role: "murid",
-      email: "rizky.ramadhan@siswa.smk.sch.id",
+      email: "abimuslihin@gmail.com",
       kelas: "X BCF 1",
-      isActive: true,
-    },
-    {
-      id: "usr-murid-10246",
-      name: "Siti Nurhaliza",
-      identifier: "10246",
-      role: "murid",
-      email: "siti.nurhaliza@siswa.smk.sch.id",
-      kelas: "X BCF 1",
-      isActive: true,
-    },
-    {
-      id: "usr-murid-10247",
-      name: "Dimas Anggara",
-      identifier: "10247",
-      role: "murid",
-      email: "dimas.anggara@siswa.smk.sch.id",
-      kelas: "X BCF 2",
       isActive: true,
     },
   ]);
@@ -105,7 +106,7 @@ export default function AdminPenggunaPage() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        const res = await fetch("/broman/api/admin/pengguna");
+        const res = await fetch(apiUrl("/api/admin/pengguna"));
         const data = await res.json();
         if (data.success && Array.isArray(data.users) && data.users.length > 0) {
           setUsers(data.users);
@@ -169,7 +170,7 @@ export default function AdminPenggunaPage() {
     showNotice(`Pengguna baru "${newUser.name}" tersimpan ke basis data MySQL.`);
 
     try {
-      await fetch("/broman/api/admin/pengguna", {
+      await fetch(apiUrl("/api/admin/pengguna"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -196,7 +197,7 @@ export default function AdminPenggunaPage() {
     showNotice(`Status akun ${target.name} diperbarui ke MySQL (${nextVal ? "Aktif" : "Nonaktif"}).`);
 
     try {
-      await fetch("/broman/api/admin/pengguna", {
+      await fetch(apiUrl("/api/admin/pengguna"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -220,7 +221,7 @@ export default function AdminPenggunaPage() {
     showNotice(`Pengguna "${name}" berhasil dihapus dari basis data MySQL.`);
 
     try {
-      await fetch("/broman/api/admin/pengguna", {
+      await fetch(apiUrl("/api/admin/pengguna"), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -268,7 +269,7 @@ export default function AdminPenggunaPage() {
     showNotice(`Data pengguna "${targetName}" berhasil diperbarui di basis data MySQL.`);
 
     try {
-      await fetch("/broman/api/admin/pengguna", {
+      await fetch(apiUrl("/api/admin/pengguna"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -322,7 +323,7 @@ export default function AdminPenggunaPage() {
     showNotice(`Berhasil mengimpor 3 pengguna dan tersimpan ke basis data MySQL!`);
 
     try {
-      await fetch("/broman/api/admin/pengguna", {
+      await fetch(apiUrl("/api/admin/pengguna"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ users: imported }),

@@ -13,6 +13,7 @@ import {
   Calendar,
   Database,
 } from "lucide-react";
+import { apiUrl } from "@/lib/api-client";
 
 interface KelasItem {
   id: string;
@@ -31,8 +32,8 @@ export default function AdminKelasPage() {
       name: "X BCF 1",
       fase: "E",
       grade: "Kelas X",
-      waliKelas: "Saputra Indra Purnama, S.Pd.",
-      studentCount: 2,
+      waliKelas: "Saputra Indra Purnama, S.Pd., Gr.",
+      studentCount: 1,
       academicYear: "2026/2027",
     },
     {
@@ -40,8 +41,8 @@ export default function AdminKelasPage() {
       name: "X BCF 2",
       fase: "E",
       grade: "Kelas X",
-      waliKelas: "Bambang Sudibyo, S.Sn., M.Pd.",
-      studentCount: 1,
+      waliKelas: "Very Kurniawan, S.Pd., Gr.",
+      studentCount: 0,
       academicYear: "2026/2027",
     },
     {
@@ -49,7 +50,7 @@ export default function AdminKelasPage() {
       name: "XI BCF",
       fase: "F",
       grade: "Kelas XI",
-      waliKelas: "Ratna Sari, M.Ds.",
+      waliKelas: "Latifah Ardiana, S.Kom.",
       studentCount: 0,
       academicYear: "2026/2027",
     },
@@ -58,7 +59,7 @@ export default function AdminKelasPage() {
       name: "XII BCF",
       fase: "F",
       grade: "Kelas XII",
-      waliKelas: "Saputra Indra Purnama, S.Pd.",
+      waliKelas: "Muhammad Apri Sastriyono, S.Tr.KM., Gr.",
       studentCount: 0,
       academicYear: "2026/2027",
     },
@@ -71,7 +72,7 @@ export default function AdminKelasPage() {
   useEffect(() => {
     async function loadClasses() {
       try {
-        const res = await fetch("/broman/api/admin/kelas");
+        const res = await fetch(apiUrl("/api/admin/kelas"));
         const data = await res.json();
         if (data.success && Array.isArray(data.classes) && data.classes.length > 0) {
           setKelasList(data.classes);
@@ -113,7 +114,7 @@ export default function AdminKelasPage() {
 
     // Kirim ke API MySQL
     try {
-      const res = await fetch("/broman/api/admin/kelas", {
+      const res = await fetch(apiUrl("/api/admin/kelas"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -138,7 +139,7 @@ export default function AdminKelasPage() {
     setTimeout(() => setNotice(null), 3000);
 
     try {
-      await fetch("/broman/api/admin/kelas", {
+      await fetch(apiUrl("/api/admin/kelas"), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),

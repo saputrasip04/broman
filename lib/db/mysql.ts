@@ -53,6 +53,10 @@ export async function queryMySQL<T = any>(
   sql: string,
   params: unknown[] = []
 ): Promise<{ success: boolean; data: T[]; error?: string }> {
+  const config = getMySQLConfig();
+  if (process.env.VERCEL && (config.host === "localhost" || config.host === "127.0.0.1")) {
+    return { success: false, data: [], error: "MySQL localhost tidak tersedia di environment Vercel" };
+  }
   try {
     const pool = getMySQLPool();
     const [rows] = await pool.query(sql, params);
@@ -75,6 +79,16 @@ export async function checkMySQLStatus(): Promise<{
   message: string;
 }> {
   const config = getMySQLConfig();
+  if (process.env.VERCEL && (config.host === "localhost" || config.host === "127.0.0.1")) {
+    return {
+      connected: false,
+      host: config.host,
+      port: config.port,
+      database: config.database,
+      tablesCount: 0,
+      message: "Vercel cloud environment: Menggunakan Cloud Registry Fallback (MySQL XAMPP lokal tidak dapat diakses langsung dari serverless publik)",
+    };
+  }
   try {
     const pool = getMySQLPool();
     // Test ping sederhana

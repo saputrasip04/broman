@@ -532,10 +532,10 @@ ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
 
 -- D. Kelas
 INSERT INTO `classes` (`id`, `academic_year_id`, `name`, `fase_id`, `homeroom_teacher_id`) VALUES
-('cls-x-bcf-1', 'ay-2026-ganjil', 'X BCF 1', 'fas-e-01', 'usr-guru-19911004'),
-('cls-x-bcf-2', 'ay-2026-ganjil', 'X BCF 2', 'fas-e-01', 'usr-guru-bambang'),
-('cls-xi-bcf', 'ay-2026-ganjil', 'XI BCF', 'fas-f-01', 'usr-guru-ratna'),
-('cls-xii-bcf', 'ay-2026-ganjil', 'XII BCF', 'fas-f-01', 'usr-guru-19911004')
+('cls-x-bcf-1', 'ay-2026-ganjil', 'X BCF 1', 'fas-e-01', 'usr-guru-199110042022211007'),
+('cls-x-bcf-2', 'ay-2026-ganjil', 'X BCF 2', 'fas-e-01', 'usr-guru-199002042022211009'),
+('cls-xi-bcf', 'ay-2026-ganjil', 'XI BCF', 'fas-f-01', 'usr-guru-198703072022212011'),
+('cls-xii-bcf', 'ay-2026-ganjil', 'XII BCF', 'fas-f-01', 'usr-guru-199404252020121012')
 ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
 
 -- E. Mata Pelajaran (DBP & PSPT)

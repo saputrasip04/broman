@@ -7,7 +7,7 @@ import { apiUrl } from "@/lib/api-client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState("10245");
+  const [identifier, setIdentifier] = useState("123456");
   const [password, setPassword] = useState("murid123");
   const [role, setRole] = useState<"murid" | "guru" | "super_admin">("murid");
   const [loading, setLoading] = useState(false);
@@ -17,10 +17,10 @@ export default function LoginPage() {
     setRole(selectedRole);
     setErrorMsg("");
     if (selectedRole === "murid") {
-      setIdentifier("10245"); // Contoh NIS Siswa
+      setIdentifier("123456"); // NIS Siswa (Abi Muslihin)
       setPassword("murid123");
     } else if (selectedRole === "guru") {
-      setIdentifier("199002042022211009"); // NIP Guru (Very Kurniawan, S.Pd., Gr.)
+      setIdentifier("199110042022211007"); // NIP Guru (Saputra Indra Purnama, S.Pd., Gr.)
       setPassword("guru123");
     } else {
       setIdentifier("admin@smk.sch.id");
@@ -141,7 +141,7 @@ export default function LoginPage() {
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="Contoh: 10245 / guru@smk.sch.id"
+                  placeholder="Contoh: 123456 / guru@smk.sch.id"
                   className="w-full rounded-xl border border-slate-700 bg-slate-950/70 pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 transition-colors"
                 />
               </div>

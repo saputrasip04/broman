@@ -16,20 +16,20 @@ export const SESSION_COOKIE_NAME = "broman_session";
 // Daftar akun baku untuk demo dan pengujian
 export const DEMO_USERS: Record<UserRole, UserSession> = {
   murid: {
-    id: "usr-murid-10245",
-    name: "Rizky Ramadhan",
+    id: "usr-murid-123456",
+    name: "Abi Muslihin",
     role: "murid",
-    identifier: "10245",
-    email: "rizky.ramadhan@siswa.smk.sch.id",
+    identifier: "123456",
+    email: "abimuslihin@gmail.com",
     kelas: "X BCF 1",
   },
   guru: {
-    id: "usr-guru-199002042022211009",
-    name: "Very Kurniawan, S.Pd., Gr.",
+    id: "usr-guru-199110042022211007",
+    name: "Saputra Indra Purnama, S.Pd., Gr.",
     role: "guru",
-    identifier: "199002042022211009",
-    email: "verykurniawan42@guru.smk.belajar.id",
-    kelas: "Guru Mata Pelajaran",
+    identifier: "199110042022211007",
+    email: "saputrapurnama40@guru.belajar.id",
+    kelas: "Guru Pengampu",
   },
   super_admin: {
     id: "usr-admin-01",
